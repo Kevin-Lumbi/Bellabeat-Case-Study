@@ -1,0 +1,93 @@
+Changelog:
+
+Cleaned and checked data for both folders on their respective Excel csv files through simple filtering and manual checking.
+
+Uploaded csv files on to Microsoft SQL Server.
+
+Began by first making sure all files were uploaded successfully and appropriately named.
+
+Query to join tables:
+SELECT MA.Id, MA.date, MA.WeightPounds, AM.column1, AM.Date, AM.WeightPounds, AM.Fat, MA.Fat
+FROM weightLogInfo_merged_March_April AS MA 
+LEFT JOIN weightLogInfo_merged AS AM
+ON MA.Id = AM.column1
+
+
+First checked on differences between weight log info
+ Only 31%  of users used the weight log feature between March-April and only 24% used it between April-May
+
+Following code was used to check for differences in any increase, decrease or maintenance of weight between datasets.
+
+SELECT MA.Id, MA.date, MA.WeightPounds, MA.BMI, AM.column1, AM.Date, AM.WeightPounds, AM.BMI
+FROM weightLogInfo_merged_March_April AS MA 
+LEFT JOIN weightLogInfo_merged AS AM
+ON MA.Id = AM.column1
+WHERE AM.WeightPounds > MA.WeightPounds 
+
+Code was altered to check for "<=" as well.
+
+Following code used to count the number of users with changes
+
+SELECT COUNT(DISTINCT Id) AS MA_weight_change, COUNT(DISTINCT column1) AS AM_weight_change
+FROM weightLogInfo_merged_March_April AS MA 
+LEFT JOIN weightLogInfo_merged AS AM
+ON MA.Id = AM.column1
+WHERE AM.WeightPounds > MA.WeightPounds
+
+Similarly altered code to check for "<=" numbers.
+
+This next SQL query was used to find how many users actually had data in the Fat field.
+
+SELECT MA.Id, MA.date, MA.WeightPounds, AM.column1, AM.Date, AM.WeightPounds, AM.Fat, MA.Fat
+FROM weightLogInfo_merged_March_April AS MA 
+LEFT JOIN weightLogInfo_merged AS AM
+ON MA.Id = AM.column1
+WHERE MA.Fat IS NOT NULL
+
+Only 2 users have data in the Fat field. 
+
+Moving on to Sleep data
+
+This query was used to find the average difference between the fields "Total Time in Bed" and "Total Minutes Asleep" to find on average how long does it take for fitbit users to fall asleep. 
+
+SELECT AVG(TotalTimeInBed - TotalMinutesAsleep) AS 'Going to sleep difference'
+FROM sleepDay_merged
+
+Results showed the average time it takes for users to fall asleep is 39 minutes.
+
+SELECT AVG(TotalMinutesAsleep) AS 'Avg minutes asleep'
+FROM sleepDay_merged
+
+Resulted n 419 minutes of average minutes asleep 
+
+Moving on to daily activities dataset:
+
+Quickly we notice there isn't much valuable data in the LoggedActivitiesDistance field and use the following query:
+
+SELECT COUNT(id)
+FROM dailyActivity_merged_March_April
+WHERE LoggedActivitiesDistance > 0 
+
+Only 24 entries with only 6 users having used the activities logged feature. That is a mere 17% for the March to April dataset. 
+The April - May dataset has no entries at all.
+
+Using the hourCalories dataset I used the following query to check if there is substantial data with the asked for amount of calories:
+
+SELECT *
+FROM hourlyCalories_merged_March_April
+WHERE Calories > 200
+
+Throughout most of the day, users will have burnt about 95 calories every hour:
+
+SELECT 
+	AVG(MA.Calories) AS Avgcalories_March, 
+	AVG(AM.Calories) AS Avgcalories_April
+FROM hourlyCalories_merged_March_April AS MA
+LEFT JOIN hourlyCalories_merged AS AM
+ON MA.Id = AM.Id
+
+So when analyzing a set hour or more where the calories burnt are greater than 200, it can be assumed that the user is exercising/working out at that hour. 
+
+Moving on to visualization portion of the process on Tabeau
+
+
